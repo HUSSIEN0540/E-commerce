@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>final-project</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+
+<body>
+
+    <script>
+    // 7ywadeek 3la el login lw me4 3amel loggin
+    if (!localStorage.getItem('loggedIn')) {
+      window.location.href = "login.html";
+    }
+  </script>
+     
+  
+  <nav>
+   
+    <a class="logo" href="index.html">store logo</a>
+    
+    <div class="nav-right">
+      <button class="logout-btn" onclick="logout()">
+        <i class="ri-logout-box-line"></i> Logout
+      </button>
+      
+      <a href="cart.html" class="cart-icon">
+        <i class="ri-shopping-bag-line"></i>
+        <span class="cart-item">0</span>
+      </a>
+    </div>
+  </nav>
+
+  <section class="product-collection">
+    <h1>Latest Collection</h1>
+    <div class="product-list"></div>
+  </section>
+
+  <script src="products.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

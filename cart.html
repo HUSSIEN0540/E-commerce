@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+<body>
+    <script>
+    // 7ywadeek 3la el login lw me4 3amel loggin
+    if (!localStorage.getItem('loggedIn')) {
+      window.location.href = "login.html";
+    }
+  </script>
+     
+     
+  <nav>
+    <a class="logo" href="index.html">store logo</a>
+    
+    <div class="nav-right">
+      <button class="logout-btn" onclick="logout()">
+        <i class="ri-logout-box-line"></i> Logout
+      </button>
+      
+      <a href="cart.html" class="cart-icon">
+        <i class="ri-shopping-bag-line"></i>
+        <span class="cart-item">0</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="cart">
+    <div class="cart-header">
+      <h1>Shopping Cart</h1>
+    </div>
+
+    <div class="cart-items"></div>
+
+    <div class="cart-summary">
+      <div class="summary-item">
+        <span>Subtotal:</span>
+        <span class="subtotal">$0.00</span>
+      </div>
+      <div class="summary-item">
+        <span> taxes: </span>
+        <span>10%</span>
+      </div>
+      <div class="summary-item">
+        <span>Grand Total:</span>
+        <span class="grand-total">$0.00</span>
+      </div>
+      <button class="btn checkout-btn">Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <script src="products.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>final-project</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+
+<body>
+      <script>
+    // 7ywadeek 3la el login lw me4 3amel loggin
+    if (!localStorage.getItem('loggedIn')) {
+      window.location.href = "login.html";
+    }
+  </script>
+     
+  <nav>
+    <a class="logo" href="index.html">store logo</a>
+    
+    <a href="cart.html" class="cart-icon">
+      <i class="ri-shopping-bag-line"></i>
+      <span class="cart-item">0</span>
+    </a>
+  </nav>
+
+  <div class="product-detail">
+    <div class="product-img">
+      <div class="thumbnail-list"></div>
+      <div class="main-img"></div>
+    </div>
+
+    <div class="product-info">
+      <h2 class="title"></h2>
+      
+      <div class="rating" id="product-rating">
+        <i class="ri-star-line" data-rating="1"></i>
+        <i class="ri-star-line" data-rating="2"></i>
+        <i class="ri-star-line" data-rating="3"></i>
+        <i class="ri-star-line" data-rating="4"></i>
+        <i class="ri-star-line" data-rating="5"></i>
+        <span id="rating-count">(0)</span>
+      </div>
+
+      <span class="price"></span>
+      
+      <p class="description"></p>
+      
+      <div class="size-selection">
+        <p>select size</p>
+        <div class="size-options"></div>
+      </div>
+      
+      <div class="color-selection">
+        <p>select color</p>
+        <div class="color-options"></div>
+      </div>
+      
+      <button class="btn" id="add-cart-btn" aria-label="Add to cart">
+        <i class="ri-shopping-cart-line"></i> Add to Cart
+      </button><br>
+
+      <div class="product-policy">
+        <br>
+        <p>100% original product</p>
+        <p>easy return and exchange in 14 days</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="products.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
