@@ -160,7 +160,9 @@ function login(event) {
     //by3ml check lw el input da mwgood fi users wla la
     if (user) {
         alert("✅ Login successful!");
-        localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('loggedIn', 'true',);
+        localStorage.setItem('user',`${username}`)
+     
         
         // 7ystna 1 sec wb3deen ywadeek 34an ntfada el errors
         setTimeout(() => {
@@ -175,6 +177,7 @@ function login(event) {
 // by5ly el loggedin false we ywadeek llogin
 function logout() {
  localStorage.removeItem('loggedIn');
+ localStorage.setItem('user','none')
     window.location.href = "login.html";
 }
 
@@ -780,7 +783,7 @@ function productRating(){
 /**
  * 
  * {
- *  5: [{
+ *  productID: [{
  *      userId: 5,
  *      rating: 4
  * },
