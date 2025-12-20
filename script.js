@@ -792,5 +792,14 @@ function productRating(){
  *      rating: 2
  * },
  * ]
+ * },
+ * 
+ * 
+ * {
+ * userName: shehab,
+ * rating: [{
+ * ratingId: 1, rating: 3},
+ * ]
+ * 
  * }
  */
