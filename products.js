@@ -1,5 +1,5 @@
 // ...existing code...
-var products = [
+window.products = [
   {
     id: 1,
     name: " Casual Round Neck T-Shirt",
