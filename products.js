@@ -1,5 +1,5 @@
 // ...existing code...
-const products = [
+var products = [
   {
     id: 1,
     name: " Casual Round Neck T-Shirt",
