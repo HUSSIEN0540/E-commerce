@@ -1,5 +1,24 @@
 //el products elgya mn product.js
-let productsToDisplay = products; 
+let productsToDisplay = [];
+
+// Load products from localStorage or use default
+function loadProducts() {
+    try {
+        const storedProducts = localStorage.getItem("products");
+        if (storedProducts) {
+            productsToDisplay = JSON.parse(storedProducts);
+        } else {
+            productsToDisplay = window.products || [];
+            // Save default products to localStorage
+            localStorage.setItem("products", JSON.stringify(productsToDisplay));
+        }
+    } catch(e) {
+        productsToDisplay = window.products || [];
+    }
+}
+
+// Initialize products on load
+loadProducts(); 
 
 // estna el html yload el2wr(instalization)
 // bt7dd enta feen (homepage,productdetail,cart)
@@ -37,9 +56,15 @@ sessionStorage.removeItem('IsThisFirstTime_Log_From_LiveServer');
        const registerForm = document.getElementById("registerForm");
     if (registerForm) registerForm.addEventListener("submit", register);
 
-    // ta48el el cartcount we el product rating 
+    // ta48el el cartcount we el product rating
     productRating();
     updateCartCount();
+
+    // ta48el el admin functions
+    const adminDashboard = document.querySelector(".admin-dashboard");
+    if (adminDashboard) {
+        displayAdminDashboard();
+    }
 }  );
 
 //elfunction el bt3ml register 
@@ -99,7 +124,7 @@ function register(event) {
     }
 
     // byd5l user gdeed
-    const newUser = { username, password };
+    const newUser = { username, password, role: "user" };
     users.push(newUser);
     
     try {
@@ -160,13 +185,18 @@ function login(event) {
     //by3ml check lw el input da mwgood fi users wla la
     if (user) {
         alert("✅ Login successful!");
-        localStorage.setItem('loggedIn', 'true',);
-        localStorage.setItem('user',`${username}`)
+        localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('user', username);
+        localStorage.setItem('userRole', user.role);
      
         
         // 7ystna 1 sec wb3deen ywadeek 34an ntfada el errors
         setTimeout(() => {
-            window.location.href = "index.html";
+            if (user.role === 'admin') {
+                window.location.href = "admin.html";
+            } else {
+                window.location.href = "index.html";
+            }
         }, 100);
         //lw me4 mwgood 7ydeek error
     } else {
@@ -177,14 +207,16 @@ function login(event) {
 // by5ly el loggedin false we ywadeek llogin
 function logout() {
  localStorage.removeItem('loggedIn');
+ localStorage.removeItem('userRole');
  localStorage.setItem('user','none')
     window.location.href = "login.html";
 }
 
 // el default users 34an 34an a54 mn 8er regester +el users el gdida 7ttsave fiha
 const defaultUsers = [
-    { username: "moki", password: "2010" },
-    { username: "mokh", password: "1984" }
+    { username: "moki", password: "2010", role: "user" },
+    { username: "mokh", password: "1984", role: "user" },
+    { username: "admin", password: "admin123", role: "admin" }
 ];
  
 let users = []; 
@@ -254,7 +286,7 @@ function displayProducts() {
 
     // lw mafeesh products to display o5rog mn el function
     if(!Array.isArray(productsToDisplay)) {
-        return;
+        loadProducts();
     }
     const container = document.querySelector(".product-list");
     if (!container){ 
@@ -321,13 +353,12 @@ function displayProducts() {
 //elfunction bta3t el view product fi el productdetail 34an lama ados 3la view details yro7 l saf7t el product detail w y3rd el product elly edos 3leh
 function viewProductDetail(id) {
     //lw mafeesh products o5rog mn el function
-    if (!Array.isArray(products)) {
-        alert("Product data not available.");
-        return;
+    if (!Array.isArray(productsToDisplay)) {
+        loadProducts();
     }
 
     //7yft7 el saf7t el product 3la 7sab el id elly enta edos 3leh
-    const product = products.find(p => p.id === id);
+    const product = productsToDisplay.find(p => p.id === id);
     
     //lw d5lt be id me4 mwgood masalan 20934 ydeek error
     if (!product) {
@@ -654,13 +685,13 @@ function searchProducts(keyword) {
 
     // law el search fadya, a3rd kol el products
     if (!keyword.trim()) {
-        
-        productsToDisplay = products;
+
+        loadProducts();
 
          // law fe search, a3ml filter 3la el products
     } else {
-       
-        const filtered = products.filter(p =>
+
+        const filtered = productsToDisplay.filter(p =>
             // 7y7ol ay 7aga tktbha l lower case 34an el search yb2a ashal
             p.name.toLowerCase().includes(keyword.toLowerCase()) ||
             p.description.toLowerCase().includes(keyword.toLowerCase())
@@ -705,79 +736,363 @@ function initLocalStorage() {
 
 
 // bt3ml el rating bta3 el product
-function productRating(){ 
-    
+function productRating(){
+
     // bygeeb el container bta3 el rating
-    const ratingContainer = document.getElementById("product-rating"); 
+    const ratingContainer = document.getElementById("product-rating");
     if (!ratingContainer) return; // lw mafeesh container o5rog
 
     // bya5od el product elly enta m5taro
-    let productData; 
-    try { 
-        productData = JSON.parse(sessionStorage.getItem("selectedProduct")); 
-    } catch(e) { 
-        productData = null; 
-    } 
+    let productData;
+    try {
+        productData = JSON.parse(sessionStorage.getItem("selectedProduct"));
+    } catch(e) {
+        productData = null;
+    }
 
     if (!productData) return; // lw mafeesh product m5tar o5rog
 
     // el ratings el ma7foza abl kda
-    const ratingsRaw = localStorage.getItem("product_ratings"); 
-    const ratings = ratingsRaw ? JSON.parse(ratingsRaw) : {}; 
+    const ratingsRaw = localStorage.getItem("product_ratings");
+    const ratings = ratingsRaw ? JSON.parse(ratingsRaw) : {};
 
     // el rating el mawgood ll product
-    let currentRating = 0; 
-    if (typeof ratings[productData.id] !== "undefined") 
-        currentRating = parseInt(ratings[productData.id]) || 0; 
+    let currentRating = 0;
+    if (typeof ratings[productData.id] !== "undefined")
+        currentRating = parseInt(ratings[productData.id]) || 0;
 
     // el stars el bttzhr fel html
-    const stars = ratingContainer.querySelectorAll("i"); 
+    const stars = ratingContainer.querySelectorAll("i");
 
     // bt3ml update ll stars 34an t8yr lonhom 3la 7sab el rating
-    function updateStars(rating) { 
-        stars.forEach((star, index) => { 
-            if (index < rating) { 
-                star.classList.remove("ri-star-line"); 
-                star.classList.add("ri-star-fill"); 
-            } else { 
-                star.classList.remove("ri-star-fill"); 
-                star.classList.add("ri-star-line"); 
+    function updateStars(rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.remove("ri-star-line");
+                star.classList.add("ri-star-fill");
+            } else {
+                star.classList.remove("ri-star-fill");
+                star.classList.add("ri-star-line");
             }
         });
     }
 
     // el click 34an t3ml select ll rating el enta 3ayzo
-    stars.forEach((star, index) => { 
-        star.style.cursor = "pointer"; 
+    stars.forEach((star, index) => {
+        star.style.cursor = "pointer";
 
-        star.addEventListener("click", () => { 
-            currentRating = index + 1; 
-            updateStars(currentRating); 
-            ratings[productData.id] = currentRating; 
-            localStorage.setItem("product_ratings", JSON.stringify(ratings)); 
+        star.addEventListener("click", () => {
+            currentRating = index + 1;
+            updateStars(currentRating);
+            ratings[productData.id] = currentRating;
+            localStorage.setItem("product_ratings", JSON.stringify(ratings));
 
             // update ll number el zher gamb el stars
-            const ratingCount = document.getElementById("rating-count"); 
+            const ratingCount = document.getElementById("rating-count");
             if (ratingCount) ratingCount.textContent = `(${currentRating})`;
         });
 
         // hover 34an y3ml preview bsoor3a
-        star.addEventListener("mouseenter", () => { 
-            updateStars(index + 1); 
+        star.addEventListener("mouseenter", () => {
+            updateStars(index + 1);
         });
     });
 
     // lama t5rog b el mouse yrg3 el rating el asasi
-    ratingContainer.addEventListener("mouseleave", () => { 
-        updateStars(currentRating); 
+    ratingContainer.addEventListener("mouseleave", () => {
+        updateStars(currentRating);
     });
 
     // by3rd el rating el mat7foz
-    updateStars(currentRating); 
+    updateStars(currentRating);
 
     // by3rd el number el mawgod abl ma tdos
-    const ratingCount = document.getElementById("rating-count"); 
-    if (ratingCount) ratingCount.textContent = `(${currentRating})`; 
+    const ratingCount = document.getElementById("rating-count");
+    if (ratingCount) ratingCount.textContent = `(${currentRating})`;
+}
+
+// Admin Dashboard Functions
+function displayAdminDashboard() {
+    updateDashboardStats();
+    displayAdminProducts();
+    displayAdminUsers();
+    displayAnalytics();
+}
+
+function updateDashboardStats() {
+    // Total Products
+    const totalProducts = productsToDisplay.length;
+    document.getElementById('total-products').textContent = totalProducts;
+
+    // Total Users
+    let users = [];
+    try {
+        const storedUsers = localStorage.getItem("users");
+        users = storedUsers ? JSON.parse(storedUsers) : defaultUsers.slice();
+    } catch(e) {
+        users = defaultUsers.slice();
+    }
+    document.getElementById('total-users').textContent = users.length;
+
+    // Total Sales
+    let cart = [];
+    try { cart = JSON.parse(localStorage.getItem("cart")) || []; } catch(e) { cart = []; }
+    const totalSales = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    document.getElementById('total-sales').textContent = `${totalSales.toFixed(2)}`;
+
+    // Items in Cart
+    const cartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    document.getElementById('cart-items').textContent = cartItems;
+}
+
+function displayAdminProducts() {
+    const container = document.getElementById('product-list');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    productsToDisplay.forEach(product => {
+        const productCard = document.createElement('div');
+        productCard.className = 'admin-product-card';
+
+        const color = product.colors[0];
+        const defaultImg = color ? color.image : 'images/defaultimage.jpg';
+
+        productCard.innerHTML = `
+            <img src="${defaultImg}" alt="${product.name}">
+            <div class="admin-product-info">
+                <h3>${product.name}</h3>
+                <p>Price: ${product.price}</p>
+                <p>ID: ${product.id}</p>
+            </div>
+            <div class="admin-product-actions">
+                <button class="btn edit-btn" onclick="editProduct(${product.id})">Edit</button>
+                <button class="btn delete-btn" onclick="deleteProduct(${product.id})">Delete</button>
+            </div>
+        `;
+
+        container.appendChild(productCard);
+    });
+}
+
+function displayAdminUsers() {
+    const container = document.getElementById('user-list');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    let users = [];
+    try {
+        const storedUsers = localStorage.getItem("users");
+        users = storedUsers ? JSON.parse(storedUsers) : defaultUsers.slice();
+    } catch(e) {
+        users = defaultUsers.slice();
+    }
+
+    users.forEach(user => {
+        const userCard = document.createElement('div');
+        userCard.className = 'admin-user-card';
+
+        userCard.innerHTML = `
+            <div class="admin-user-info">
+                <h3>${user.username}</h3>
+                <p>Role: ${user.role}</p>
+            </div>
+            <div class="admin-user-actions">
+                <button class="btn edit-btn" onclick="editUser('${user.username}')">Edit</button>
+                <button class="btn delete-btn" onclick="deleteUser('${user.username}')">Delete</button>
+            </div>
+        `;
+
+        container.appendChild(userCard);
+    });
+}
+
+function displayAnalytics() {
+    // Popular Products
+    const popularContainer = document.getElementById('popular-products');
+    if (popularContainer) {
+        let cart = [];
+        try { cart = JSON.parse(localStorage.getItem("cart")) || []; } catch(e) { cart = []; }
+
+        const productCounts = {};
+        cart.forEach(item => {
+            productCounts[item.id] = (productCounts[item.id] || 0) + item.quantity;
+        });
+
+        const sortedProducts = Object.entries(productCounts)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 5);
+
+        popularContainer.innerHTML = '';
+        sortedProducts.forEach(([id, count]) => {
+            const product = productsToDisplay.find(p => p.id == id);
+            if (product) {
+                popularContainer.innerHTML += `<p>${product.name}: ${count} sold</p>`;
+            }
+        });
+    }
+
+    // Sales by Product
+    const salesContainer = document.getElementById('sales-by-product');
+    if (salesContainer) {
+        let cart = [];
+        try { cart = JSON.parse(localStorage.getItem("cart")) || []; } catch(e) { cart = []; }
+
+        const productSales = {};
+        cart.forEach(item => {
+            productSales[item.id] = (productSales[item.id] || 0) + (item.price * item.quantity);
+        });
+
+        const sortedSales = Object.entries(productSales)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 5);
+
+        salesContainer.innerHTML = '';
+        sortedSales.forEach(([id, sales]) => {
+            const product = productsToDisplay.find(p => p.id == id);
+            if (product) {
+                salesContainer.innerHTML += `<p>${product.name}: ${sales.toFixed(2)}</p>`;
+            }
+        });
+    }
+}
+
+function showSection(sectionName) {
+    // Hide all sections
+    document.querySelectorAll('.admin-section').forEach(section => {
+        section.classList.remove('active');
+    });
+
+    // Remove active class from all sidebar links
+    document.querySelectorAll('.admin-sidebar a').forEach(link => {
+        link.classList.remove('active');
+    });
+
+    // Show selected section
+    document.getElementById(sectionName).classList.add('active');
+
+    // Add active class to clicked link
+    event.target.classList.add('active');
+}
+
+function showAddProductForm() {
+    document.getElementById('add-product-modal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('add-product-modal').style.display = 'none';
+}
+
+// Add Product Form Handler
+document.addEventListener('DOMContentLoaded', () => {
+    const addProductForm = document.getElementById('add-product-form');
+    if (addProductForm) {
+        addProductForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('product-name').value;
+            const price = parseFloat(document.getElementById('product-price').value);
+            const description = document.getElementById('product-description').value;
+
+            const newProduct = {
+                id: Date.now(), // Simple ID generation
+                name: name,
+                price: price,
+                description: description,
+                colors: [{
+                    name: "Default",
+                    hex: "#000000",
+                    image: "images/defaultimage.jpg",
+                    images: ["images/defaultimage.jpg"],
+                    sizes: ["S", "M", "L", "XL"],
+                    productRating: 0
+                }]
+            };
+
+            productsToDisplay.push(newProduct);
+            localStorage.setItem('products', JSON.stringify(productsToDisplay));
+
+            // Reset form and close modal
+            addProductForm.reset();
+            closeModal();
+
+            // Refresh display
+            displayAdminProducts();
+            updateDashboardStats();
+
+            alert('Product added successfully!');
+        });
+    }
+});
+
+function editProduct(id) {
+    const product = productsToDisplay.find(p => p.id === id);
+    if (!product) return;
+
+    const newName = prompt('Enter new product name:', product.name);
+    if (newName && newName !== product.name) {
+        product.name = newName;
+        localStorage.setItem('products', JSON.stringify(productsToDisplay));
+        displayAdminProducts();
+        updateDashboardStats();
+        alert('Product updated successfully!');
+    }
+}
+
+function deleteProduct(id) {
+    if (confirm('Are you sure you want to delete this product?')) {
+        productsToDisplay = productsToDisplay.filter(p => p.id !== id);
+        localStorage.setItem('products', JSON.stringify(productsToDisplay));
+        displayAdminProducts();
+        updateDashboardStats();
+        alert('Product deleted successfully!');
+    }
+}
+
+function editUser(username) {
+    let users = [];
+    try {
+        const storedUsers = localStorage.getItem("users");
+        users = storedUsers ? JSON.parse(storedUsers) : defaultUsers.slice();
+    } catch(e) {
+        users = defaultUsers.slice();
+    }
+
+    const user = users.find(u => u.username === username);
+    if (!user) return;
+
+    const newRole = prompt('Enter new role (admin/user):', user.role);
+    if (newRole && (newRole === 'admin' || newRole === 'user')) {
+        user.role = newRole;
+        localStorage.setItem('users', JSON.stringify(users));
+        displayAdminUsers();
+        updateDashboardStats();
+        alert('User updated successfully!');
+    }
+}
+
+function deleteUser(username) {
+    if (username === 'admin') {
+        alert('Cannot delete the main admin account!');
+        return;
+    }
+
+    if (confirm('Are you sure you want to delete this user?')) {
+        let users = [];
+        try {
+            const storedUsers = localStorage.getItem("users");
+            users = storedUsers ? JSON.parse(storedUsers) : defaultUsers.slice();
+        } catch(e) {
+            users = defaultUsers.slice();
+        }
+
+        users = users.filter(u => u.username !== username);
+        localStorage.setItem('users', JSON.stringify(users));
+        displayAdminUsers();
+        updateDashboardStats();
+        alert('User deleted successfully!');
+    }
 }
 
 /**
