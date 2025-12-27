@@ -705,98 +705,120 @@ function initLocalStorage() {
 
 
 // bt3ml el rating bta3 el product
-function productRating(){ 
-    
-    // bygeeb el container bta3 el rating
+function productRating() { 
+
+    //bygeeb el html id
     const ratingContainer = document.getElementById("product-rating"); 
-    if (!ratingContainer) return; // lw mafeesh container o5rog
+    if (!ratingContainer) return;
 
-    // bya5od el product elly enta m5taro
-    let productData; 
-    try { 
-        productData = JSON.parse(sessionStorage.getItem("selectedProduct")); 
-    } catch(e) { 
-        productData = null; 
-    } 
+    //bygeeb el user mn el local storage 
+    const currentUser = localStorage.getItem("user");
+    if (!currentUser || currentUser === "none") return;
 
-    if (!productData) return; // lw mafeesh product m5tar o5rog
+    //bygeeb el product el enta m5taro
+    let productData;
+    try {
+        productData = JSON.parse(sessionStorage.getItem("selectedProduct"));
+    } catch {
+        productData = null;
+    }
+    if (!productData) return;
 
-    // el ratings el ma7foza abl kda
-    const ratingsRaw = localStorage.getItem("product_ratings"); 
-    const ratings = ratingsRaw ? JSON.parse(ratingsRaw) : {}; 
+    // bygeeb el previous ratings w lw mafee4 tb2a fdya
+    let allRatings = [];
+    try {
+        allRatings = JSON.parse(localStorage.getItem("product_ratings")) || [];
+    } catch {
+        allRatings = [];
+    }
 
-    // el rating el mawgood ll product
-    let currentRating = 0; 
-    if (typeof ratings[productData.id] !== "undefined") 
-        currentRating = parseInt(ratings[productData.id]) || 0; 
+    // by4oof el user da 3ndo tkymat 2bl kda wla la lw la by3mk wa7d gdeed
+    let userRatings = allRatings.find(u => u.userName === currentUser);
 
-    // el stars el bttzhr fel html
-    const stars = ratingContainer.querySelectorAll("i"); 
+    if (!userRatings) {
+        userRatings = {
+            user: currentUser,
+            ratings: []
+        };
+        allRatings.push(userRatings);
+    }
 
-    // bt3ml update ll stars 34an t8yr lonhom 3la 7sab el rating
+    // bygeeb el rating ll product dah bel user dah
+    let currentRating = 0;
+    const existingRating = userRatings.ratings.find(
+        r => r.ratingId === productData.id
+    );
+
+    // 34an el stars tb2a mazbota
+    if (existingRating) {
+        currentRating = existingRating.rating;
+    }
+
+    // bygeeb el stars mn el html
+    const stars = ratingContainer.querySelectorAll("i");
+
+    // bylwn el stars 7asab el rating
     function updateStars(rating) { 
-        stars.forEach((star, index) => { 
-            if (index < rating) { 
-                star.classList.remove("ri-star-line"); 
-                star.classList.add("ri-star-fill"); 
-            } else { 
-                star.classList.remove("ri-star-fill"); 
-                star.classList.add("ri-star-line"); 
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.remove("ri-star-line");
+                star.classList.add("ri-star-fill");
+            } else {
+                star.classList.remove("ri-star-fill");
+                star.classList.add("ri-star-line");
             }
         });
     }
 
-    // el click 34an t3ml select ll rating el enta 3ayzo
-    stars.forEach((star, index) => { 
-        star.style.cursor = "pointer"; 
+    stars.forEach((star, index) => {
+        star.style.cursor = "pointer";
 
-        star.addEventListener("click", () => { 
-            currentRating = index + 1; 
-            updateStars(currentRating); 
-            ratings[productData.id] = currentRating; 
-            localStorage.setItem("product_ratings", JSON.stringify(ratings)); 
+        // by7sb el rating el 7yzhr 2wl ma tdoos w
+        //  y3mlo update fi el local storage
+        star.addEventListener("click", () => {
+            const newRating = index + 1;
 
-            // update ll number el zher gamb el stars
-            const ratingCount = document.getElementById("rating-count"); 
+            const ratingIndex = userRatings.ratings.findIndex(
+                r => r.ProductId === productData.id
+            );
+
+            if (ratingIndex !== -1) {
+                userRatings.ratings[ratingIndex].rating = newRating;
+            } else {
+                userRatings.ratings.push({
+                    ProductId: productData.id,
+                    rating: newRating
+                });
+            }
+
+            localStorage.setItem("product_ratings", JSON.stringify(allRatings));
+
+            currentRating = newRating;
+            updateStars(currentRating);
+
+            const ratingCount = document.getElementById("rating-count");
             if (ratingCount) ratingCount.textContent = `(${currentRating})`;
         });
 
-        // hover 34an y3ml preview bsoor3a
-        star.addEventListener("mouseenter", () => { 
-            updateStars(index + 1); 
+        star.addEventListener("mouseenter", () => {
+            updateStars(index + 1);
         });
     });
 
-    // lama t5rog b el mouse yrg3 el rating el asasi
-    ratingContainer.addEventListener("mouseleave", () => { 
-        updateStars(currentRating); 
+    ratingContainer.addEventListener("mouseleave", () => {
+        updateStars(currentRating);
     });
 
-    // by3rd el rating el mat7foz
-    updateStars(currentRating); 
+    updateStars(currentRating);
 
-    // by3rd el number el mawgod abl ma tdos
-    const ratingCount = document.getElementById("rating-count"); 
-    if (ratingCount) ratingCount.textContent = `(${currentRating})`; 
+    const ratingCount = document.getElementById("rating-count");
+    if (ratingCount) ratingCount.textContent = `(${currentRating})`;
 }
-
-/**
+ 
+ /*
+ *
  * 
- * {
- *  productID: [{
- *      userId: 5,
- *      rating: 4
- * },
- * {
- *      userId: 2,
- *      rating: 2
- * },
- * ]
- * },
- * 
- * 
- * {
- * userName: shehab,
+ * { userName: shehab,
  * rating: [{
  * ratingId: 1, rating: 3},
  * ]
