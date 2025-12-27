@@ -815,13 +815,3 @@ function productRating() {
     if (ratingCount) ratingCount.textContent = `(${currentRating})`;
 }
  
- /*
- *
- * 
- * { userName: shehab,
- * rating: [{
- * ratingId: 1, rating: 3},
- * ]
- * 
- * }
- */
